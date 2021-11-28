@@ -16,9 +16,6 @@ jobs:
         node-version: ["12.x", "14.x", "16.x"]
     steps:
       - uses: actions/checkout@v2
-        with:
-          # https://github.com/codecov/codecov-action/issues/190
-          fetch-depth: 2
       - uses: actions/cache@v2
         with:
           path: |
@@ -45,4 +42,3 @@ jobs:
         run: npm test -- --coverage
       - name: Build TypeScript
         run: npm run build
-      - uses: codecov/codecov-action@v1
