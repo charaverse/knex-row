@@ -3,7 +3,7 @@ name: Publish specific commit builds
 on:
   push:
     branches:
-      - yagoo
+      - "main"
 
 jobs:
   build:

@@ -3,10 +3,10 @@ name: CI
 on:
   push:
     branches:
-      - yagoo
+      - "main"
   pull_request:
     branches:
-      - yagoo
+      - "main"
 
 jobs:
   test:
@@ -27,7 +27,7 @@ jobs:
       - name: Setup MySQL
         run: |
           sudo systemctl start mysql
-          mysql -uroot -proot -e "CREATE DATABASE lamy_test;"
+          mysql -uroot -proot -e "CREATE DATABASE knex_row_test;"
       - name: Install dependencies
         run: npm ci
       - name: Execute linter

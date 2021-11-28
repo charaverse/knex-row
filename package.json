@@ -1,5 +1,5 @@
 {
-  "name": "@tkesgar/lamy",
+  "name": "@charaverse/knex-row",
   "version": "0.4.0",
   "description": "Lightweight row interface for Knex.js",
   "keywords": [
@@ -13,12 +13,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tkesgar/lamy.git"
+    "url": "git+https://github.com/charaverse/knex-row.git"
   },
   "bugs": {
-    "url": "https://github.com/tkesgar/lamy/issues"
+    "url": "https://github.com/charaverse/knex-row/issues"
   },
-  "homepage": "https://github.com/tkesgar/lamy#readme",
+  "homepage": "https://github.com/charaverse/knex-row#readme",
   "publishConfig": {
     "access": "public"
   },
