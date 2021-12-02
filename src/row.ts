@@ -1,30 +1,58 @@
 import { Knex } from "knex";
 import { Connection, ConnectionOpts } from ".";
 
+/**
+ * @internal
+ */
 export type RowValue = unknown | number | boolean | string | Date;
 
+/**
+ * The default column name for row identifier, usually used as primary and
+ * auto-incrementing key.
+ */
 export const ID_COL = "id";
 
+/**
+ * The default column name for row create timestamp.
+ */
 export const TIME_CREATED_COL = "time_created";
 
+/**
+ * The default column name for row update timestamp.
+ */
 export const TIME_UPDATED_COL = "time_updated";
 
+/**
+ * The default column name for row delete timestamp.
+ */
 export const TIME_DELETED_COL = "time_deleted";
 
 interface RowData {
   [key: string]: RowValue;
 }
 
-interface RowConstructorOpts extends ConnectionOpts {
-  tableName: string;
-  rowData: RowData;
-  primaryCols?: string[];
-  idCol?: string;
-  timeCreatedCol?: string;
-  timeUpdatedCol?: string;
-  timeDeletedCol?: string;
-}
-
+/**
+ * The class `Row` is intended to wrap over a Knex query row data and and a Knex
+ * connection:
+ *
+ * ```ts
+ * import knex from "knex"
+ *
+ * const conn = knex({
+ *   // database connection options
+ * })
+ *
+ * const tableName = "mytable"
+ *
+ * const [rowData] = await conn("mytable").where("id", 123)
+ *
+ * const row = new Row({ conn, tableName, rowData })
+ * ```
+ *
+ * With the knowledge of table name and a connection to create queries, `Row`
+ * is able to provide simple methods such as {@link Row.setColumn} to update
+ * column data and {@link Row.deletePermanently} to delete row from table.
+ */
 export class Row<T extends number | string = number> {
   private readonly initialConn: Connection;
   private readonly primaryCols: string[];
@@ -37,7 +65,17 @@ export class Row<T extends number | string = number> {
 
   private conn: Connection;
 
-  constructor(opts: RowConstructorOpts) {
+  constructor(
+    opts: ConnectionOpts & {
+      tableName: string;
+      rowData: RowData;
+      idCol?: string;
+      timeCreatedCol?: string;
+      timeUpdatedCol?: string;
+      timeDeletedCol?: string;
+      primaryCols?: string[];
+    }
+  ) {
     const {
       conn,
       tableName,
