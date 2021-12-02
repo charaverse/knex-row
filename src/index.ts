@@ -1,4 +1,4 @@
-import { Knex } from "knex";
+import type { Knex } from "knex";
 
 /**
  * This type represents any Knex interfaces that can be used *for creating
