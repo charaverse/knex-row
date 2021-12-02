@@ -1,7 +1,7 @@
 import { Knex } from "knex";
 import { Row } from "./row";
 import { ConnectionOpts } from "./connection";
-import { RowData, TIME_DELETED_COL, ID_COL } from "./row";
+import { RowValue, TIME_DELETED_COL, ID_COL } from "./row";
 
 type IdType = number | string;
 
@@ -96,9 +96,13 @@ export async function countAll(opts: CountAllOpts): Promise<number> {
   return count;
 }
 
+interface InsertRowData {
+  [key: string]: RowValue | Knex.Raw;
+}
+
 export async function insertAll(
   tableName: string,
-  rowData: RowData[],
+  rowData: InsertRowData[],
   opts: ConnectionOpts
 ): Promise<void> {
   const { conn } = opts;
@@ -108,7 +112,7 @@ export async function insertAll(
 
 export async function insert(
   tableName: string,
-  rowData: RowData,
+  rowData: InsertRowData,
   opts: ConnectionOpts
 ): Promise<number> {
   const { conn } = opts;

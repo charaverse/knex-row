@@ -1,8 +1,7 @@
 import { Knex } from "knex";
 import { Connection, ConnectionOpts } from ".";
 
-// TODO Remove Knex.Raw from RowValue
-type RowValue = unknown | number | boolean | string | Date | Knex.Raw;
+export type RowValue = unknown | number | boolean | string | Date;
 
 export const ID_COL = "id";
 
@@ -12,7 +11,7 @@ export const TIME_UPDATED_COL = "time_updated";
 
 export const TIME_DELETED_COL = "time_deleted";
 
-export interface RowData {
+interface RowData {
   [key: string]: RowValue;
 }
 
