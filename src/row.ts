@@ -178,22 +178,58 @@ export class Row<IdType extends number | string = number> {
     return this.rowData[col] as ValueType;
   }
 
+  /**
+   * Alias for `this.getColumn<IdType>(this.idCol)`.
+   */
   get id(): IdType {
     return this.getColumn<IdType>(this.idCol);
   }
 
+  /**
+   * Alias for `this.getColumn<Date>(this.timeCreatedCol)`.
+   */
   get timeCreated(): Date {
     return this.getColumn<Date>(this.timeCreatedCol);
   }
 
+  /**
+   * Alias for `this.getColumn<Date>(this.timeUpdatedCol)`.
+   */
   get timeUpdated(): Date {
     return this.getColumn<Date>(this.timeUpdatedCol);
   }
 
+  /**
+   * Alias for `this.getColumn<Date>(this.timeDeletedCol)`.
+   */
   get timeDeleted(): Date {
     return this.getColumn<Date>(this.timeDeletedCol);
   }
 
+  /**
+   * Returns a subset of row data whose key is in `primaryCols`.
+   *
+   * ```ts
+   * const rowData = {
+   *   foo_id: 123,
+   *   bar_value: "abc",
+   *   baz: null,
+   * }
+   *
+   * const row = new Row({
+   *   conn,
+   *   table: "my_table",
+   *   rowData,
+   *   primaryCols: ["foo_id", "bar_value"]
+   * })
+   *
+   * console.log(row.primaryKey)
+   * // { foo_id: 123, bar_value: "abc" }
+   * ```
+   *
+   * If the row data uses the actual column names, `primaryKey` can be used when
+   * creating queries.
+   */
   get primaryKey(): RowData {
     const key: RowData = {};
 
@@ -204,15 +240,36 @@ export class Row<IdType extends number | string = number> {
     return key;
   }
 
+  /**
+   * Alias for `this.connection(this.tableName).where(this.primaryKey)`.
+   *
+   * ```ts
+   * const [{ name }] = await row.query.select("name")
+   * ```
+   */
   get query(): Knex.QueryBuilder {
     return this.connection(this.tableName).where(this.primaryKey);
   }
 
+  /**
+   * Returns `true` if `this.timeDeleted` is truthy, `false` otherwise.
+   *
+   * This accessor can be used for tables with "soft-delete" scenario, where
+   * a time deleted timestamp column marks whether the row should be considered
+   * as deleted.
+   */
   get isDeleted(): boolean {
     return Boolean(this.timeDeleted);
   }
 
-  async setColumns(data: { [key: string]: RowValue }): Promise<void> {
+  /**
+   * Performs an update query and updates the row data.
+   *
+   * @param data An object whose keys are subset of row data keys that contains the new values
+   */
+  async setColumns(data: {
+    [key: string]: RowValue | Knex.Raw;
+  }): Promise<void> {
     for (const key of Object.keys(data)) {
       if (!this.isColumn(key)) {
         throw new Error(
@@ -225,18 +282,34 @@ export class Row<IdType extends number | string = number> {
     Object.assign(this.rowData, data);
   }
 
+  /**
+   * Alias for `this.setColumns({ [col]: value })`.
+   *
+   * @param col The column name to be updated
+   * @param value The new column value
+   */
   async setColumn(col: string, value: RowValue): Promise<void> {
     await this.setColumns({ [col]: value });
   }
 
+  /**
+   * Marks the row as soft-deleted, by setting the time deleted timestamp.
+   */
   async delete(): Promise<void> {
     await this.setColumns({ [this.timeDeletedCol]: this.connection.fn.now() });
   }
 
+  /**
+   * Unmarks the row from being soft-deleted, by setting the time deleted
+   * timestamp to `NULL`.
+   */
   async restore(): Promise<void> {
     await this.setColumns({ [this.timeDeletedCol]: null });
   }
 
+  /**
+   * Permanently removes a row from the table by executing a delete query.
+   */
   async deletePermanently(): Promise<void> {
     await this.query.delete();
   }
