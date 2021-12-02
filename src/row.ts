@@ -32,7 +32,7 @@ interface RowData {
 }
 
 /**
- * The class `Row` is intended to wrap over a Knex query row data and and a Knex
+ * The class Row is intended to wrap over a Knex query row data and and a Knex
  * connection:
  *
  * ```ts
@@ -49,11 +49,13 @@ interface RowData {
  * const row = new Row({ conn, tableName, rowData })
  * ```
  *
- * With the knowledge of table name and a connection to create queries, `Row`
+ * With the knowledge of table name and a connection to create queries, Row
  * is able to provide simple methods such as {@link Row.setColumn} to update
  * column data and {@link Row.deletePermanently} to delete row from table.
+ *
+ * @template IdType The type of identifier column (defaults to `number`)
  */
-export class Row<T extends number | string = number> {
+export class Row<IdType extends number | string = number> {
   private readonly initialConn: Connection;
   private readonly primaryCols: string[];
   private readonly tableName: string;
@@ -65,6 +67,21 @@ export class Row<T extends number | string = number> {
 
   private conn: Connection;
 
+  /**
+   * Creates a new Row.
+   *
+   * Options:
+   *
+   * - `tableName` *(required)*: the table of the row
+   * - `rowData` *(required)*: the row data, usually from Knex query result
+   * - `idCol`: the name of identifier column (default: {@link ID_COL})
+   * - `timeCreatedCol`: the name of row created timestamp column (default: {@link TIME_CREATED_COL})
+   * - `timeUpdatedCol`: the name of row updated timestamp column (default: {@link TIME_UPDATED_COL})
+   * - `timeDeletedCol`: the name of row deleted timestamp column (default: {@link TIME_DELETED_COL})
+   * - `primaryCols`: the name of identifier column (default: `[idCol]`)
+   *
+   * @template IdType The type of identifier column (defaults to `number`)
+   */
   constructor(
     opts: ConnectionOpts & {
       tableName: string;
@@ -88,40 +105,81 @@ export class Row<T extends number | string = number> {
     } = opts;
 
     this.initialConn = conn;
-    this.primaryCols = primaryCols;
+    this.conn = conn;
+
     this.tableName = tableName;
     this.rowData = rowData;
-    this.conn = conn;
+
     this.idCol = idCol;
     this.timeCreatedCol = timeCreatedCol;
     this.timeUpdatedCol = timeUpdatedCol;
     this.timeDeletedCol = timeDeletedCol;
+    this.primaryCols = primaryCols;
   }
 
+  /**
+   * Returns the Knex connection object associated with the row, or sets the
+   * connection object to a new value.
+   *
+   * If a falsy value is provided, the original connection object when the row
+   * is first created will be used.
+   */
   get connection(): Connection {
     return this.conn;
   }
 
+  // TODO Make user explicitly use null to revert the connection
   set connection(value: Connection) {
     this.conn = value || this.initialConn;
   }
 
+  /**
+   * Checks if the column name exists on the provided row data.
+   *
+   * Note that this is not necessarily the actual row data, because the column
+   * may not be retrieved during query (e.g. `SELECT my_col FROM my_table`)
+   * or the column may be aliased (e.g. `SELECT `my_col as col FROM my_table`).
+   *
+   * @param col The column name to be checked
+   * @returns `true` if the column name exists on row data, `false` otherwise
+   */
   isColumn(col: string): boolean {
     return typeof this.rowData[col] !== "undefined";
   }
 
-  getColumn<T extends RowValue>(col: string): T {
+  /**
+   * Returns the value of the column from the row data.
+   *
+   * If the column does not exist in the row data (i.e. {@link Row.isColumn}
+   * returns `false`), an error will be thrown.
+   *
+   * The `ValueType` parameter allows the type to be inferred from usage, or
+   * to be overridden if necessary:
+   *
+   * ```ts
+   * // Type is inferred
+   * const myName: string = row.getColumn("name")
+   *
+   * // myName will be string
+   * const myName = row.getColumn<string>("name")
+   * ```
+   *
+   * @param col The column name to be retrieved
+   * @returns The column value
+   * @template ValueType The expected column value type
+   */
+  getColumn<ValueType extends RowValue>(col: string): ValueType {
     if (!this.isColumn(col)) {
       throw new Error(
         `Column '${col}' does not exist for table ${this.tableName}`
       );
     }
 
-    return this.rowData[col] as T;
+    return this.rowData[col] as ValueType;
   }
 
-  get id(): T {
-    return this.getColumn<T>(this.idCol);
+  get id(): IdType {
+    return this.getColumn<IdType>(this.idCol);
   }
 
   get timeCreated(): Date {
