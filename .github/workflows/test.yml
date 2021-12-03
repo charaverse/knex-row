@@ -42,3 +42,5 @@ jobs:
         run: npm test -- --coverage
       - name: Build TypeScript
         run: npm run build
+      - name: Build documentation
+        run: npm run docs
