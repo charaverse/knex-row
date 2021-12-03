@@ -1,45 +1,61 @@
 import { Knex } from "knex";
 import { Connection, ConnectionOpts } from ".";
 
-type RowValue = unknown | number | boolean | string | Date | Knex.Raw;
+/**
+ * @internal
+ */
+export type RowValue = unknown | number | boolean | string | Date;
 
-type IdType = number | string;
-
-type QueryFunction = (this: Knex.QueryBuilder) => Knex.QueryBuilder | void;
-
-interface SelectOpts extends ConnectionOpts {
-  tableName: string;
-  where?: QueryFunction;
-  includeDeleted?: boolean;
-  includeDeletedCol?: string;
-  before?: (query: Knex.QueryBuilder) => void;
-}
-
-export const DEFAULT_PAGINATION_LIMIT = 20;
-
+/**
+ * The default column name for row identifier, usually used as primary and
+ * auto-incrementing key.
+ */
 export const ID_COL = "id";
 
+/**
+ * The default column name for row create timestamp.
+ */
 export const TIME_CREATED_COL = "time_created";
 
+/**
+ * The default column name for row update timestamp.
+ */
 export const TIME_UPDATED_COL = "time_updated";
 
+/**
+ * The default column name for row delete timestamp.
+ */
 export const TIME_DELETED_COL = "time_deleted";
 
-export interface RowData {
+interface RowData {
   [key: string]: RowValue;
 }
 
-interface RowConstructorOpts extends ConnectionOpts {
-  tableName: string;
-  rowData: RowData;
-  primaryCols?: string[];
-  idCol?: string;
-  timeCreatedCol?: string;
-  timeUpdatedCol?: string;
-  timeDeletedCol?: string;
-}
-
-export class Row<T extends IdType = number> {
+/**
+ * The class Row is intended to wrap over a Knex query row data and and a Knex
+ * connection:
+ *
+ * ```ts
+ * import knex from "knex"
+ *
+ * const conn = knex({
+ *   // database connection options
+ * })
+ *
+ * const tableName = "mytable"
+ *
+ * const [rowData] = await conn("mytable").where("id", 123)
+ *
+ * const row = new Row({ conn, tableName, rowData })
+ * ```
+ *
+ * With the knowledge of table name and a connection to create queries, Row
+ * is able to provide simple methods such as {@link Row.setColumn} to update
+ * column data and {@link Row.deletePermanently} to delete row from table.
+ *
+ * @template IdType The type of identifier column (defaults to `number`)
+ */
+export class Row<IdType extends number | string = number> {
   private readonly initialConn: Connection;
   private readonly primaryCols: string[];
   private readonly tableName: string;
@@ -51,7 +67,32 @@ export class Row<T extends IdType = number> {
 
   private conn: Connection;
 
-  constructor(opts: RowConstructorOpts) {
+  /**
+   * Creates a new Row.
+   *
+   * Options:
+   *
+   * - `tableName` *(required)*: the table of the row
+   * - `rowData` *(required)*: the row data, usually from Knex query result
+   * - `idCol`: the name of identifier column (default: {@link ID_COL})
+   * - `timeCreatedCol`: the name of row created timestamp column (default: {@link TIME_CREATED_COL})
+   * - `timeUpdatedCol`: the name of row updated timestamp column (default: {@link TIME_UPDATED_COL})
+   * - `timeDeletedCol`: the name of row deleted timestamp column (default: {@link TIME_DELETED_COL})
+   * - `primaryCols`: the name of identifier column (default: `[idCol]`)
+   *
+   * @template IdType The type of identifier column (defaults to `number`)
+   */
+  constructor(
+    opts: ConnectionOpts & {
+      tableName: string;
+      rowData: RowData;
+      idCol?: string;
+      timeCreatedCol?: string;
+      timeUpdatedCol?: string;
+      timeDeletedCol?: string;
+      primaryCols?: string[];
+    }
+  ) {
     const {
       conn,
       tableName,
@@ -64,54 +105,131 @@ export class Row<T extends IdType = number> {
     } = opts;
 
     this.initialConn = conn;
-    this.primaryCols = primaryCols;
+    this.conn = conn;
+
     this.tableName = tableName;
     this.rowData = rowData;
-    this.conn = conn;
+
     this.idCol = idCol;
     this.timeCreatedCol = timeCreatedCol;
     this.timeUpdatedCol = timeUpdatedCol;
     this.timeDeletedCol = timeDeletedCol;
+    this.primaryCols = primaryCols;
   }
 
+  /**
+   * Returns the Knex connection object associated with the row, or sets the
+   * connection object to a new value.
+   *
+   * If a falsy value is provided, the original connection object when the row
+   * is first created will be used.
+   */
   get connection(): Connection {
     return this.conn;
   }
 
+  // TODO Make user explicitly use null to revert the connection
   set connection(value: Connection) {
     this.conn = value || this.initialConn;
   }
 
+  /**
+   * Checks if the column name exists on the provided row data.
+   *
+   * Note that this is not necessarily the actual row data, because the column
+   * may not be retrieved during query (e.g. `SELECT my_col FROM my_table`)
+   * or the column may be aliased (e.g. `SELECT `my_col as col FROM my_table`).
+   *
+   * @param col The column name to be checked
+   * @returns `true` if the column name exists on row data, `false` otherwise
+   */
   isColumn(col: string): boolean {
     return typeof this.rowData[col] !== "undefined";
   }
 
-  getColumn<T extends RowValue>(col: string): T {
+  /**
+   * Returns the value of the column from the row data.
+   *
+   * If the column does not exist in the row data (i.e. {@link Row.isColumn}
+   * returns `false`), an error will be thrown.
+   *
+   * The `ValueType` parameter allows the type to be inferred from usage, or
+   * to be overridden if necessary:
+   *
+   * ```ts
+   * // Type is inferred
+   * const myName: string = row.getColumn("name")
+   *
+   * // myName will be string
+   * const myName = row.getColumn<string>("name")
+   * ```
+   *
+   * @param col The column name to be retrieved
+   * @returns The column value
+   * @template ValueType The expected column value type
+   */
+  getColumn<ValueType extends RowValue>(col: string): ValueType {
     if (!this.isColumn(col)) {
       throw new Error(
         `Column '${col}' does not exist for table ${this.tableName}`
       );
     }
 
-    return this.rowData[col] as T;
+    return this.rowData[col] as ValueType;
   }
 
-  get id(): T {
-    return this.getColumn<T>(this.idCol);
+  /**
+   * Alias for `this.getColumn<IdType>(this.idCol)`.
+   */
+  get id(): IdType {
+    return this.getColumn<IdType>(this.idCol);
   }
 
+  /**
+   * Alias for `this.getColumn<Date>(this.timeCreatedCol)`.
+   */
   get timeCreated(): Date {
     return this.getColumn<Date>(this.timeCreatedCol);
   }
 
+  /**
+   * Alias for `this.getColumn<Date>(this.timeUpdatedCol)`.
+   */
   get timeUpdated(): Date {
     return this.getColumn<Date>(this.timeUpdatedCol);
   }
 
+  /**
+   * Alias for `this.getColumn<Date>(this.timeDeletedCol)`.
+   */
   get timeDeleted(): Date {
     return this.getColumn<Date>(this.timeDeletedCol);
   }
 
+  /**
+   * Returns a subset of row data whose key is in `primaryCols`.
+   *
+   * ```ts
+   * const rowData = {
+   *   foo_id: 123,
+   *   bar_value: "abc",
+   *   baz: null,
+   * }
+   *
+   * const row = new Row({
+   *   conn,
+   *   table: "my_table",
+   *   rowData,
+   *   primaryCols: ["foo_id", "bar_value"]
+   * })
+   *
+   * console.log(row.primaryKey)
+   * // { foo_id: 123, bar_value: "abc" }
+   * ```
+   *
+   * If the row data uses the actual column names, `primaryKey` can be used when
+   * creating queries.
+   */
   get primaryKey(): RowData {
     const key: RowData = {};
 
@@ -122,15 +240,36 @@ export class Row<T extends IdType = number> {
     return key;
   }
 
+  /**
+   * Alias for `this.connection(this.tableName).where(this.primaryKey)`.
+   *
+   * ```ts
+   * const [{ name }] = await row.query.select("name")
+   * ```
+   */
   get query(): Knex.QueryBuilder {
     return this.connection(this.tableName).where(this.primaryKey);
   }
 
+  /**
+   * Returns `true` if `this.timeDeleted` is truthy, `false` otherwise.
+   *
+   * This accessor can be used for tables with "soft-delete" scenario, where
+   * a time deleted timestamp column marks whether the row should be considered
+   * as deleted.
+   */
   get isDeleted(): boolean {
     return Boolean(this.timeDeleted);
   }
 
-  async setColumns(data: { [key: string]: RowValue }): Promise<void> {
+  /**
+   * Performs an update query and updates the row data.
+   *
+   * @param data An object whose keys are subset of row data keys that contains the new values
+   */
+  async setColumns(data: {
+    [key: string]: RowValue | Knex.Raw;
+  }): Promise<void> {
     for (const key of Object.keys(data)) {
       if (!this.isColumn(key)) {
         throw new Error(
@@ -143,119 +282,35 @@ export class Row<T extends IdType = number> {
     Object.assign(this.rowData, data);
   }
 
+  /**
+   * Alias for `this.setColumns({ [col]: value })`.
+   *
+   * @param col The column name to be updated
+   * @param value The new column value
+   */
   async setColumn(col: string, value: RowValue): Promise<void> {
     await this.setColumns({ [col]: value });
   }
 
+  /**
+   * Marks the row as soft-deleted, by setting the time deleted timestamp.
+   */
   async delete(): Promise<void> {
     await this.setColumns({ [this.timeDeletedCol]: this.connection.fn.now() });
   }
 
+  /**
+   * Unmarks the row from being soft-deleted, by setting the time deleted
+   * timestamp to `NULL`.
+   */
   async restore(): Promise<void> {
     await this.setColumns({ [this.timeDeletedCol]: null });
   }
 
+  /**
+   * Permanently removes a row from the table by executing a delete query.
+   */
   async deletePermanently(): Promise<void> {
     await this.query.delete();
   }
-}
-
-interface FindAllOpts extends SelectOpts {
-  pagination?: {
-    page?: number;
-    limit?: number;
-  };
-}
-
-export async function findAll<T extends IdType = number>(
-  opts: FindAllOpts
-): Promise<Row<T>[]> {
-  const {
-    conn,
-    tableName,
-    where = null,
-    includeDeleted = false,
-    includeDeletedCol = TIME_DELETED_COL,
-    pagination = null,
-    before = null,
-  } = opts;
-
-  const query = conn(tableName);
-
-  if (where) {
-    query.where(where);
-  }
-
-  if (!includeDeleted) {
-    query.whereNull(includeDeletedCol);
-  }
-
-  if (pagination) {
-    const { limit = DEFAULT_PAGINATION_LIMIT, page = 1 } = pagination;
-    query.limit(limit).offset((page - 1) * limit);
-  }
-
-  if (before) {
-    before(query);
-  }
-
-  return (await query).map((rowData) => new Row({ tableName, rowData, conn }));
-}
-
-export async function find<T extends IdType = number>(
-  opts: SelectOpts
-): Promise<Row<T>> {
-  const [result] = await findAll<T>(opts);
-  return result ?? null;
-}
-
-interface CountAllOpts extends SelectOpts {
-  countBy?: string;
-}
-
-export async function countAll(opts: CountAllOpts): Promise<number> {
-  const {
-    conn,
-    tableName,
-    where = null,
-    includeDeleted = false,
-    includeDeletedCol = TIME_DELETED_COL,
-    countBy = [ID_COL],
-  } = opts;
-
-  const query = conn(tableName);
-
-  if (where) {
-    query.where(where);
-  }
-
-  if (!includeDeleted) {
-    query.whereNull(includeDeletedCol);
-  }
-
-  query.count({ count: Array.isArray(countBy) ? countBy : [countBy] });
-  const [{ count }] = await query;
-
-  return count;
-}
-
-export async function insertAll(
-  tableName: string,
-  rowData: RowData[],
-  opts: ConnectionOpts
-): Promise<void> {
-  const { conn } = opts;
-
-  await conn(tableName).insert(rowData);
-}
-
-export async function insert(
-  tableName: string,
-  rowData: RowData,
-  opts: ConnectionOpts
-): Promise<number> {
-  const { conn } = opts;
-
-  const [id] = await conn(tableName).insert(rowData);
-  return id;
 }
