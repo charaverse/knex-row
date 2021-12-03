@@ -1,3 +1,10 @@
+# [0.6.0](https://github.com/charaverse/knex-row/compare/v0.5.0...v0.6.0) (2021-12-03)
+
+### Bug Fixes
+
+- prevent Knex.Raw being passed as row value
+  ([7b9b442](https://github.com/charaverse/knex-row/commit/7b9b44239ce222bc1d7237b61bd0af3d2efc6cb0))
+
 # [0.5.0](https://github.com/charaverse/knex-row/compare/v0.4.0...v0.5.0) (2021-11-28)
 
 # [0.4.0](https://github.com/tkesgar/lamy/compare/v0.3.0...v0.4.0) (2021-03-07)
