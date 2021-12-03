@@ -38,7 +38,8 @@
     "clean": "rm -rf dist/**",
     "build": "tsc",
     "version": "conventional-changelog -p angular -i CHANGELOG.md -s && git add CHANGELOG.md",
-    "docs": "typedoc"
+    "docs": "typedoc",
+    "prepack": "npm run clean && npm run build"
   },
   "devDependencies": {
     "@commitlint/cli": "^15.0.0",
