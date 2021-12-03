@@ -7,9 +7,9 @@
     "database"
   ],
   "license": "MIT",
-  "author": "Ted Kesgar <t.kesgar@hey.com> (https://tkesgar.com)",
+  "author": "Ted Kesgar <t.kesgar@outlook.com> (https://tkesgar.space)",
   "contributors": [
-    "Ted Kesgar <t.kesgar@hey.com> (https://tkesgar.com)"
+    "Ted Kesgar <t.kesgar@outlook.com> (https://tkesgar.space)"
   ],
   "repository": {
     "type": "git",
@@ -18,7 +18,7 @@
   "bugs": {
     "url": "https://github.com/charaverse/knex-row/issues"
   },
-  "homepage": "https://github.com/charaverse/knex-row#readme",
+  "homepage": "https://charaverse.github.io/knex-row/",
   "publishConfig": {
     "access": "public"
   },
