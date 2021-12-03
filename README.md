@@ -16,6 +16,10 @@ type-safe interface on top of Knex.js connection and query objects.
 $ npm install @charaverse/knex-row
 ```
 
+## Usage
+
+Documentation is here: https://charaverse.github.io/knex-row/
+
 ## Contribute
 
 Feel free to [send issues][issues] or [create pull requests][pulls].
