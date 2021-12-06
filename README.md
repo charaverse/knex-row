@@ -106,7 +106,6 @@ export async function findUserRowByName(
 //
 // Here we are using ow library to provide some validations for user functions.
 import ow from "ow";
-import { UserRow, findUserRowByName } from "@/services/database/user.ts";
 
 export class User implements UserModel {
   readonly #row: UserRow;
