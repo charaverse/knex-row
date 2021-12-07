@@ -39,7 +39,9 @@
     "build": "tsc",
     "version": "conventional-changelog -p angular -i CHANGELOG.md -s && git add CHANGELOG.md",
     "docs": "typedoc",
-    "prepack": "npm run clean && npm run build"
+    "prepack": "npm run clean && npm run build",
+    "docker:up": "docker-compose --project-directory docker up -d",
+    "docker:down": "docker-compose --project-directory docker down"
   },
   "devDependencies": {
     "@commitlint/cli": "^15.0.0",
