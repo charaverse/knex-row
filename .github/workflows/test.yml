@@ -23,11 +23,6 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
-      # https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu2004-README.md#mysql
-      - name: Setup MySQL
-        run: |
-          sudo systemctl start mysql
-          mysql -uroot -proot -e "CREATE DATABASE knex_row_test;"
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
         with:
@@ -36,9 +31,10 @@ jobs:
         run: npm ci
       - name: Execute linter
         run: npm run lint
+      # Sleeping for 10 seconds to wait for the databases
+      - name: Run database containers
+        run: npm run docker:up && sleep 10
       - name: Run tests
-        env:
-          MYSQL_PASS: root
         run: npm test -- --coverage
       - name: Build TypeScript
         run: npm run build
