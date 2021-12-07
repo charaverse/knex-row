@@ -22,8 +22,8 @@ Documentation is here: https://charaverse.github.io/knex-row/
 
 ## Usage
 
-At Charaverse, knex-row is used as part of database services layer, interacing
-with the database.
+At Charaverse, knex-row is used as part of database services layer modules which
+interacts with the database.
 
 ```ts
 // models/user.ts
@@ -170,9 +170,26 @@ router.get("/user/:userName", (req, res, next) =>
 );
 ```
 
-## Contribute
+## Contributing
 
 Feel free to [send issues][issues] or [create pull requests][pulls].
+
+### Testing
+
+You can run the tests using database containers in local. [Docker][docker] and
+[Docker Compose][docker-compose] is required.
+
+```sh
+# Create the docker containers
+# Note that the container will bind with port 3306
+npm run docker:up
+
+# Run the tests
+npm test
+
+# Clean up the docker containers
+npm run docker:down
+```
 
 ## License
 
@@ -180,3 +197,5 @@ Licensed under MIT License.
 
 [issues]: https://github.com/charaverse/knex-row/issues
 [pulls]: https://github.com/charaverse/knex-row/pulls
+[docker]: https://docs.docker.com/get-started/
+[docker-compose]: https://docs.docker.com/compose/
