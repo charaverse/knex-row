@@ -16,9 +16,180 @@ type-safe interface on top of Knex.js connection and query objects.
 $ npm install @charaverse/knex-row
 ```
 
-## Contribute
+## Documentation
+
+Documentation is here: https://charaverse.github.io/knex-row/
+
+## Usage
+
+At Charaverse, knex-row is used as part of database services layer modules which
+interacts with the database.
+
+```ts
+// models/user.ts
+// ==============
+// Models are high-level interface that is the only one allowed to pass across
+// "layers". It provides a generic, simple interface that implementations must
+// adhere to.
+export interface UserModel {
+  id: number;
+  name: string;
+  displayName: string;
+  setName(name: string): Promise<void>;
+  setDisplayName(displayName: string | null): Promise<void>;
+  delete(): Promise<void>;
+}
+
+// services/database/user.ts
+// =========================
+// Database service is a module whose job is to retrieve data from database.
+// It abstracts away database-specific code such as table name and column names.
+// @charaverse/knex-row is used here.
+import knex from "knex";
+import { Connection, Row, find } from "@charaverse/row";
+
+const defaultConnection = knex({
+  // database connection configuration
+});
+
+export class UserRow {
+  readonly #row: Row;
+
+  constructor(row: Row) {
+    this.#row = row;
+  }
+
+  get id(): number {
+    return this.#row.id;
+  }
+
+  get name(): string {
+    return this.#row.getColumn("name");
+  }
+
+  get displayName(): string | null {
+    return this.#row.getColumn("display_name");
+  }
+
+  async setName(name: string): Promise<void> {
+    await this.#row.setColumn("name", name);
+  }
+
+  async setDisplayName(displayName: string | null): Promise<void> {
+    await this.#row.setColumn("display_name", displayName);
+  }
+
+  async delete(): Promise<void> {
+    await this.#row.delete();
+  }
+}
+
+export async function findUserRowByName(
+  name: string,
+  conn?: Connection = defaultConnection
+): Promise<UserRow> {
+  const row = await find({
+    conn,
+    tableName: "user",
+    where() {
+      return this.where({ name });
+    },
+  });
+}
+
+// services/user.ts
+// ================
+// User service is a high-level service that provides user retrieval methods.
+// With low-level database interface abstracted away by database services,
+// user service can focus on providing an implementation of UserModel alongside
+// additional necessary functions.
+//
+// Here we are using ow library to provide some validations for user functions.
+import ow from "ow";
+
+export class User implements UserModel {
+  readonly #row: UserRow;
+
+  constructor(row: Row) {
+    this.#row = row;
+  }
+
+  get id() {
+    return this.#row.id;
+  }
+
+  get name() {
+    return this.#row.name;
+  }
+
+  get displayName() {
+    return this.#row.displayName;
+  }
+
+  async setName(name: string) {
+    ow(name, ow.string.nonEmpty.max(16).matches(/^\w+$/));
+
+    return this.#row.setName(name);
+  }
+
+  async setDisplayName(displayName: string | null) {
+    ow(name, ow.any(ow.null, ow.string.nonEmpty.max(32)));
+
+    return this.#row.setDisplayName(displayName);
+  }
+
+  async delete() {
+    return this.#row.delete();
+  }
+}
+
+export async function findUserByName(name: string): Promise<UserModel> {
+  const row = await findUserRowByName(name);
+
+  return row ? new User(row) : null;
+}
+
+// User service functions are the functions that is ready for use by outer
+// modules such as HTTP request handler or scripts.
+router.get("/user/:userName", (req, res, next) =>
+  (async () => {
+    const userName = req.params.userName;
+
+    const user = await findUserByName(userName);
+    if (user) {
+      res.sendStatus(404);
+      return;
+    }
+
+    res.json({
+      id: user.id,
+      name: user.name,
+      displayName: user.displayName,
+    });
+  })().catch(next)
+);
+```
+
+## Contributing
 
 Feel free to [send issues][issues] or [create pull requests][pulls].
+
+### Testing
+
+You can run the tests using database containers in local. [Docker][docker] and
+[Docker Compose][docker-compose] is required.
+
+```sh
+# Create the docker containers
+# Note that the container will bind with port 3306
+npm run docker:up
+
+# Run the tests
+npm test
+
+# Clean up the docker containers
+npm run docker:down
+```
 
 ## License
 
@@ -26,3 +197,5 @@ Licensed under MIT License.
 
 [issues]: https://github.com/charaverse/knex-row/issues
 [pulls]: https://github.com/charaverse/knex-row/pulls
+[docker]: https://docs.docker.com/get-started/
+[docker-compose]: https://docs.docker.com/compose/

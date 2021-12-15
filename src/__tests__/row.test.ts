@@ -10,6 +10,7 @@ const conn = knex({
     password: process.env.MYSQL_PASS,
     database: process.env.MYSQL_NAME,
   },
+  asyncStackTraces: true,
 });
 
 function createTestRow(): { row: Row; conn: Knex } {
@@ -49,7 +50,6 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await conn.schema.dropTable("kansen");
   await conn.destroy();
 });
 

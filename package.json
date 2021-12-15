@@ -1,15 +1,15 @@
 {
   "name": "@charaverse/knex-row",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Lightweight row interface for Knex.js",
   "keywords": [
     "knex",
     "database"
   ],
   "license": "MIT",
-  "author": "Ted Kesgar <t.kesgar@hey.com> (https://tkesgar.com)",
+  "author": "Ted Kesgar <t.kesgar@outlook.com> (https://tkesgar.space)",
   "contributors": [
-    "Ted Kesgar <t.kesgar@hey.com> (https://tkesgar.com)"
+    "Ted Kesgar <t.kesgar@outlook.com> (https://tkesgar.space)"
   ],
   "repository": {
     "type": "git",
@@ -18,7 +18,7 @@
   "bugs": {
     "url": "https://github.com/charaverse/knex-row/issues"
   },
-  "homepage": "https://github.com/charaverse/knex-row#readme",
+  "homepage": "https://charaverse.github.io/knex-row/",
   "publishConfig": {
     "access": "public"
   },
@@ -38,7 +38,10 @@
     "clean": "rm -rf dist/**",
     "build": "tsc",
     "version": "conventional-changelog -p angular -i CHANGELOG.md -s && git add CHANGELOG.md",
-    "docs": "typedoc"
+    "docs": "typedoc",
+    "prepack": "npm run clean && npm run build",
+    "docker:up": "docker-compose --project-directory docker up -d",
+    "docker:down": "docker-compose --project-directory docker down"
   },
   "devDependencies": {
     "@commitlint/cli": "^15.0.0",
