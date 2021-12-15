@@ -1,0 +1,91 @@
+name: Runs on main branch
+
+on:
+  push:
+    branches:
+      - "main"
+
+jobs:
+  # Copy-paste this from jobs: test in test workflow
+  test:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        node-version: ["12.x", "14.x", "16.x"]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install dependencies
+        run: npm ci
+      - name: Execute linter
+        run: npm run lint
+      # Sleeping for 10 seconds to wait for the databases
+      - name: Run database containers
+        run: npm run docker:up && sleep 10
+      - name: Run tests
+        run: npm test -- --coverage
+      - name: Build TypeScript
+        run: npm run build
+      - name: Build documentation
+        run: npm run docs
+  publish-npm:
+    needs: [test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "16.x"
+          registry-url: "https://registry.npmjs.org"
+      - name: Install dependencies
+        run: npm ci
+      - name: Create nightly version
+        run: npm --no-git-tag-version version 0.0.0-nightly-$(date +"%Y%m%d-%H%M%S")
+      - name: Publish to npm
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+  publish-docs:
+    needs: [test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "16.x"
+          registry-url: "https://registry.npmjs.org"
+      - name: Install dependencies
+        run: npm ci
+      - name: Build documentation
+        run: npm run docs
+      - name: Commit and push
+        run: |
+          git checkout build-docs
+          git config --global user.name "charaverse"
+          git config --global user.name "charaverse@users.noreply.github.com"
+          git commit -m "docs: build docs"
+          git push
