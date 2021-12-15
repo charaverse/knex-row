@@ -1,5 +1,3 @@
-# [0.0.0-nightly-20211215-155441](https://github.com/charaverse/knex-row/compare/v0.6.0...v0.0.0-nightly-20211215-155441) (2021-12-15)
-
 # [0.6.0](https://github.com/charaverse/knex-row/compare/v0.5.0...v0.6.0) (2021-12-03)
 
 ### Bug Fixes
