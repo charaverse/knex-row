@@ -31,7 +31,7 @@ jobs:
         run: npm run docker:up && sleep 10
       - name: Run tests
         run: npm test -- --coverage
-  test:
+  test-build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
