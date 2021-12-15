@@ -88,7 +88,7 @@ jobs:
       - name: Commit and push
         run: |
           git config --global user.name "charaverse"
-          git config --global user.name "charaverse@users.noreply.github.com"
+          git config --global user.email "charaverse@users.noreply.github.com"
           git merge main
           git commit -am "docs: build docs"
           git push
