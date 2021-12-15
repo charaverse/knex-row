@@ -59,7 +59,7 @@ jobs:
       - name: Create nightly version
         run: npm --no-git-tag-version version 0.0.0-nightly-$(date +"%Y%m%d-%H%M%S")
       - name: Publish to npm
-        run: npm publish
+        run: npm publish --tag nightly
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
   publish-docs:
