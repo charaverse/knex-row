@@ -67,6 +67,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          ref: build-docs
       - uses: actions/cache@v2
         with:
           path: |
@@ -84,7 +86,6 @@ jobs:
         run: npm run docs
       - name: Commit and push
         run: |
-          git checkout build-docs
           git config --global user.name "charaverse"
           git config --global user.name "charaverse@users.noreply.github.com"
           git commit -m "docs: build docs"
