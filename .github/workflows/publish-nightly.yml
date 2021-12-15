@@ -24,7 +24,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Create nightly version
-        run: npm version 0.0.0-nightly-$(date +"%Y%m%d-%H%M%S")
+        run: npm --no-git-tag-version version 0.0.0-nightly-$(date +"%Y%m%d-%H%M%S")
       - name: Publish to npm
         run: npm publish
         env:
