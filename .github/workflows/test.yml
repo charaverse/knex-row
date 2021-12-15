@@ -6,8 +6,8 @@ on:
       - "main"
 
 jobs:
-  test:
-    runs-on: ubuntu-20.04
+  test-node:
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version: ["12.x", "14.x", "16.x"]
@@ -26,13 +26,29 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - name: Install dependencies
         run: npm ci
-      - name: Execute linter
-        run: npm run lint
       # Sleeping for 10 seconds to wait for the databases
       - name: Run database containers
         run: npm run docker:up && sleep 10
       - name: Run tests
         run: npm test -- --coverage
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16.x
+      - name: Install dependencies
+        run: npm ci
+      - name: Execute linter
+        run: npm run lint
       - name: Build TypeScript
         run: npm run build
       - name: Build documentation
