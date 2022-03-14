@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import knex, { Knex } from "knex";
 import { Row, findAll, find, insertAll, insert, countAll } from "..";
 
-const conn = knex({
+const conn = knex<any, Record<string, any>[]>({
   client: "mysql2",
   connection: {
     host: process.env.MYSQL_HOST,
@@ -14,7 +15,7 @@ const conn = knex({
 });
 
 function createTestRow(): { row: Row; conn: Knex } {
-  const conn = knex({ client: "mysql2" });
+  const conn = knex<any, Record<string, any>[]>({ client: "mysql2" });
 
   const row = new Row({
     conn,
@@ -85,16 +86,16 @@ describe("getConnection() test", () => {
         tableName: "kansen",
       });
 
-      expect(rows.find((row) => row.id === 1).getColumn<string>("name")).toBe(
+      expect(rows.find((row) => row.id === 1)?.getColumn<string>("name")).toBe(
         "Karlsruhe"
       );
-      expect(rows.find((row) => row.id === 2).getColumn<string>("name")).toBe(
+      expect(rows.find((row) => row.id === 2)?.getColumn<string>("name")).toBe(
         "Leipzig"
       );
-      expect(rows.find((row) => row.id === 4).getColumn<string>("name")).toBe(
+      expect(rows.find((row) => row.id === 4)?.getColumn<string>("name")).toBe(
         "Prinz Eugen"
       );
-      expect(rows.find((row) => row.id === 6).getColumn<string>("name")).toBe(
+      expect(rows.find((row) => row.id === 6)?.getColumn<string>("name")).toBe(
         "Friedrich der Große"
       );
     });
@@ -104,7 +105,7 @@ describe("getConnection() test", () => {
         conn,
         tableName: "kansen",
         where() {
-          this.where("score", ">=", 60);
+          void this.where("score", ">=", 60);
         },
       });
 
@@ -147,7 +148,7 @@ describe("getConnection() test", () => {
           conn,
           tableName: "kansen",
           before(query) {
-            query.orderBy("name", "desc");
+            void query.orderBy("name", "desc");
           },
         })
       ).map((row) => [row.id, row.getColumn("name")]);
@@ -169,7 +170,7 @@ describe("getConnection() test", () => {
         conn,
         tableName: "kansen",
         where() {
-          this.where({ score: 30 });
+          void this.where({ score: 30 });
         },
       });
 
@@ -181,7 +182,7 @@ describe("getConnection() test", () => {
         conn,
         tableName: "kansen",
         where() {
-          this.where({ key: "graf_zeppelin" });
+          void this.where({ key: "graf_zeppelin" });
         },
       });
 
@@ -203,7 +204,7 @@ describe("getConnection() test", () => {
         conn,
         tableName: "kansen",
         where() {
-          this.where("score", ">=", 30);
+          void this.where("score", ">=", 30);
         },
       });
 
@@ -215,7 +216,7 @@ describe("getConnection() test", () => {
         conn,
         tableName: "kansen",
         where() {
-          this.where(conn.raw("MOD(score, 2)"), "<>", 0);
+          void this.where(conn.raw("MOD(score, 2)"), "<>", 0);
         },
       });
 
@@ -225,7 +226,7 @@ describe("getConnection() test", () => {
         conn,
         tableName: "kansen",
         where() {
-          this.where("score", ">=", 20);
+          void this.where("score", ">=", 20);
         },
       });
 
@@ -259,14 +260,14 @@ describe("getConnection() test", () => {
           conn,
           tableName: "kansen",
           where() {
-            this.where("key", "mainz");
+            void this.where("key", "mainz");
           },
         }),
         find({
           conn,
           tableName: "kansen",
           where() {
-            this.where("key", "roon");
+            void this.where("key", "roon");
           },
         }),
       ]);
@@ -294,7 +295,7 @@ describe("getConnection() test", () => {
         conn,
         tableName: "kansen",
         where() {
-          this.where({ id });
+          void this.where({ id });
         },
       });
 
@@ -309,7 +310,7 @@ describe("getConnection() test", () => {
         conn,
         tableName: "kansen",
         where() {
-          this.where({ key: "z23" });
+          void this.where({ key: "z23" });
         },
       });
 
@@ -327,7 +328,7 @@ describe("getConnection() test", () => {
         conn,
         tableName: "kansen",
         where() {
-          this.where({ key: "z23_retrofit" });
+          void this.where({ key: "z23_retrofit" });
         },
       });
 
@@ -340,7 +341,7 @@ describe("getConnection() test", () => {
         conn,
         tableName: "kansen",
         where() {
-          this.where("key", "prinz_eugen");
+          void this.where("key", "prinz_eugen");
         },
       });
 
@@ -356,7 +357,7 @@ describe("getConnection() test", () => {
         conn,
         tableName: "kansen",
         where() {
-          this.where({ key: "odin" });
+          void this.where({ key: "odin" });
         },
       });
 
@@ -368,7 +369,7 @@ describe("getConnection() test", () => {
         conn,
         tableName: "kansen",
         where() {
-          this.where({ key: "odin" });
+          void this.where({ key: "odin" });
         },
       });
 
@@ -382,7 +383,7 @@ describe("getConnection() test", () => {
         conn,
         tableName: "kansen",
         where() {
-          this.where({ key: "karlsruhe" });
+          void this.where({ key: "karlsruhe" });
         },
       });
 
@@ -393,7 +394,7 @@ describe("getConnection() test", () => {
         tableName: "kansen",
         includeDeleted: true,
         where() {
-          this.where({ key: "karlsruhe" });
+          void this.where({ key: "karlsruhe" });
         },
       });
 
@@ -406,7 +407,7 @@ describe("getConnection() test", () => {
         tableName: "kansen",
         includeDeleted: true,
         where() {
-          this.where({ key: "karlsruhe" });
+          void this.where({ key: "karlsruhe" });
         },
       });
 
@@ -418,7 +419,7 @@ describe("getConnection() test", () => {
         conn,
         tableName: "kansen",
         where() {
-          this.where({ key: "karlsruhe" });
+          void this.where({ key: "karlsruhe" });
         },
       });
 
@@ -429,7 +430,7 @@ describe("getConnection() test", () => {
           conn,
           tableName: "kansen",
           where() {
-            this.where({ key: "karlsruhe" });
+            void this.where({ key: "karlsruhe" });
           },
         })
       ).toBeNull();
@@ -442,7 +443,7 @@ describe("getConnection() test", () => {
         conn,
         tableName: "kansen",
         where() {
-          this.where({ key: "z23" });
+          void this.where({ key: "z23" });
         },
       });
 
@@ -453,7 +454,7 @@ describe("getConnection() test", () => {
           conn,
           tableName: "kansen",
           where() {
-            this.where({ key: "z23" });
+            void this.where({ key: "z23" });
           },
         })
       ).toBeNull();
@@ -482,7 +483,7 @@ describe("getConnection() test", () => {
         conn,
         tableName: "kansen",
         where() {
-          this.where({ key: "leipzig_retrofit" });
+          void this.where({ key: "leipzig_retrofit" });
         },
       });
 
@@ -544,7 +545,7 @@ describe("connection", () => {
 
   it("set should set new connection", () => {
     const { row } = createTestRow();
-    const newConn = knex({ client: "mysql2" });
+    const newConn = knex<any, Record<string, any>[]>({ client: "mysql2" });
 
     row.connection = newConn;
 
@@ -553,7 +554,7 @@ describe("connection", () => {
 
   it("set should use initial connection if set to null", () => {
     const { row, conn } = createTestRow();
-    const newConn = knex({ client: "mysql2" });
+    const newConn = knex<any, Record<string, any>[]>({ client: "mysql2" });
 
     row.connection = newConn;
     expect(row.connection).toBe(newConn);

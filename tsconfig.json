@@ -4,7 +4,7 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "target": "es6",
-    "noImplicitAny": true,
+    "strict": true,
     "moduleResolution": "node",
     "sourceMap": true,
     "outDir": "dist",
@@ -13,6 +13,5 @@
       "*": ["node_modules/*", "src/types/*"]
     },
     "declaration": true
-  },
-  "include": ["src/**/*"]
+  }
 }

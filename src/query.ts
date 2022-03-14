@@ -68,22 +68,24 @@ export async function findAll<T extends IdType = number>(
   const query = conn(tableName);
 
   if (where) {
-    query.where(where);
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    void query.where(where);
   }
 
   if (!includeDeleted) {
-    query.whereNull(includeDeletedCol);
+    void query.whereNull(includeDeletedCol);
   }
 
   if (pagination) {
     const { limit = DEFAULT_PAGINATION_LIMIT, page = 1 } = pagination;
-    query.limit(limit).offset((page - 1) * limit);
+    void query.limit(limit).offset((page - 1) * limit);
   }
 
   if (before) {
     before(query);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   return (await query).map((rowData) => new Row({ tableName, rowData, conn }));
 }
 
@@ -136,15 +138,16 @@ export async function countAll(opts: CountAllOpts): Promise<number> {
   const query = conn(tableName);
 
   if (where) {
-    query.where(where);
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    void query.where(where);
   }
 
   if (!includeDeleted) {
-    query.whereNull(includeDeletedCol);
+    void query.whereNull(includeDeletedCol);
   }
 
-  query.count({ count: Array.isArray(countBy) ? countBy : [countBy] });
-  const [{ count }] = await query;
+  void query.count({ count: Array.isArray(countBy) ? countBy : [countBy] });
+  const [{ count }] = (await query) as [{ count: number }];
 
   return count;
 }
