@@ -128,8 +128,7 @@ export class Row<IdType extends number | string = number> {
     return this.conn;
   }
 
-  // TODO Make user explicitly use null to revert the connection
-  set connection(value: Connection) {
+  set connection(value: Connection | null) {
     this.conn = value || this.initialConn;
   }
 

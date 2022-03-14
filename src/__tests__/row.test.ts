@@ -1,7 +1,7 @@
 import knex, { Knex } from "knex";
 import { Row, findAll, find, insertAll, insert, countAll } from "..";
 
-const conn = knex({
+const conn = knex<any, Record<string, any>[]>({
   client: "mysql2",
   connection: {
     host: process.env.MYSQL_HOST,
@@ -14,7 +14,7 @@ const conn = knex({
 });
 
 function createTestRow(): { row: Row; conn: Knex } {
-  const conn = knex({ client: "mysql2" });
+  const conn = knex<any, Record<string, any>[]>({ client: "mysql2" });
 
   const row = new Row({
     conn,
@@ -85,16 +85,16 @@ describe("getConnection() test", () => {
         tableName: "kansen",
       });
 
-      expect(rows.find((row) => row.id === 1).getColumn<string>("name")).toBe(
+      expect(rows.find((row) => row.id === 1)?.getColumn<string>("name")).toBe(
         "Karlsruhe"
       );
-      expect(rows.find((row) => row.id === 2).getColumn<string>("name")).toBe(
+      expect(rows.find((row) => row.id === 2)?.getColumn<string>("name")).toBe(
         "Leipzig"
       );
-      expect(rows.find((row) => row.id === 4).getColumn<string>("name")).toBe(
+      expect(rows.find((row) => row.id === 4)?.getColumn<string>("name")).toBe(
         "Prinz Eugen"
       );
-      expect(rows.find((row) => row.id === 6).getColumn<string>("name")).toBe(
+      expect(rows.find((row) => row.id === 6)?.getColumn<string>("name")).toBe(
         "Friedrich der Große"
       );
     });
@@ -544,7 +544,7 @@ describe("connection", () => {
 
   it("set should set new connection", () => {
     const { row } = createTestRow();
-    const newConn = knex({ client: "mysql2" });
+    const newConn = knex<any, Record<string, any>[]>({ client: "mysql2" });
 
     row.connection = newConn;
 
@@ -553,7 +553,7 @@ describe("connection", () => {
 
   it("set should use initial connection if set to null", () => {
     const { row, conn } = createTestRow();
-    const newConn = knex({ client: "mysql2" });
+    const newConn = knex<any, Record<string, any>[]>({ client: "mysql2" });
 
     row.connection = newConn;
     expect(row.connection).toBe(newConn);
