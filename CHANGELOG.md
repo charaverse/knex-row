@@ -1,3 +1,19 @@
+# [0.7.0](https://github.com/charaverse/knex-row/compare/v0.6.0...v0.7.0) (2022-03-14)
+
+### Features
+
+- update knex to v1
+  ([26f51f7](https://github.com/charaverse/knex-row/commit/26f51f75a15b4abba59eb63d733a1d7c75d59089))
+
+### Reverts
+
+- 0.0.0-nightly-20211215-155441 [ci skip]
+  ([0bfd608](https://github.com/charaverse/knex-row/commit/0bfd60818f0a818245123db88df80ea5a341c7a6))
+
+### BREAKING CHANGES
+
+- Users must upgrade to knex v1
+
 # [0.6.0](https://github.com/charaverse/knex-row/compare/v0.5.0...v0.6.0) (2021-12-03)
 
 ### Bug Fixes
