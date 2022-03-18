@@ -1,6 +1,6 @@
 {
   "name": "@charaverse/knex-row",
-  "version": "0.7.0",
+  "version": "1.0.0",
   "description": "Lightweight row interface for Knex.js",
   "keywords": [
     "knex",
