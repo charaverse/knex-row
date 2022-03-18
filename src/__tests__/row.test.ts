@@ -34,6 +34,15 @@ function createTestRow(): { row: Row; conn: Knex } {
   return { row, conn };
 }
 
+const kansenTable = [
+  [1, "karlsruhe", "Karlsruhe", 10],
+  [2, "leipzig", "Leipzig", 20],
+  [3, "z23", "Z23", 30],
+  [4, "prinz_eugen", "Prinz Eugen", 40],
+  [5, "odin", "Odin", 45],
+  [6, "friedrich_der_grosse", "Friedrich der Große", 55],
+];
+
 beforeAll(async () => {
   await conn.schema.createTable("kansen", (table) => {
     table.increments("id");
@@ -54,31 +63,22 @@ afterAll(async () => {
   await conn.destroy();
 });
 
-describe("getConnection() test", () => {
-  const kansenTable = [
-    [1, "karlsruhe", "Karlsruhe", 10],
-    [2, "leipzig", "Leipzig", 20],
-    [3, "z23", "Z23", 30],
-    [4, "prinz_eugen", "Prinz Eugen", 40],
-    [5, "odin", "Odin", 45],
-    [6, "friedrich_der_grosse", "Friedrich der Große", 55],
-  ];
+beforeEach(async () => {
+  await conn("kansen").insert(
+    kansenTable.map(([id, key, name, score]) => ({
+      id,
+      key,
+      name,
+      score,
+    }))
+  );
+});
 
-  beforeEach(async () => {
-    await conn("kansen").insert(
-      kansenTable.map(([id, key, name, score]) => ({
-        id,
-        key,
-        name,
-        score,
-      }))
-    );
-  });
+afterEach(async () => {
+  await conn("kansen").truncate();
+});
 
-  afterEach(async () => {
-    await conn("kansen").truncate();
-  });
-
+describe("query", () => {
   describe("findAll", () => {
     it("should return array of rows", async () => {
       const rows = await findAll({
@@ -303,7 +303,9 @@ describe("getConnection() test", () => {
       expect(newRow.getColumn("score")).toBe(40);
     });
   });
+});
 
+describe("row", () => {
   describe("setColumns", () => {
     it("should update data both on row and on getConnection()", async () => {
       const row = await find({
