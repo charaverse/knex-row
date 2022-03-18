@@ -6,9 +6,13 @@
 knex-row is a lightweight row interface for Knex.js. It provides a more
 type-safe interface on top of Knex.js connection and query objects.
 
-> Please note that while knex-row can be used with any databases supported by
-> Knex.js, knex-row is currently only tested against MySQL. Some functions such
-> as `insert` might behave differently with other databases.
+Tested clients:
+
+- `mysql2`
+- `better-sqlite3`
+
+Note that knex-row will work with other clients, but some functions such as
+`insert` might behave differently with other databases.
 
 ## Installation
 
