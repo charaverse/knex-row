@@ -6,11 +6,13 @@
 <a href="https://github.com/facebook/jest"><img src="https://img.shields.io/badge/tested_with-jest-99424f.svg" alt="tested with jest"></a></p>
 <p>knex-row is a lightweight row interface for Knex.js. It provides a more
 type-safe interface on top of Knex.js connection and query objects.</p>
-<blockquote>
-<p>Please note that while knex-row can be used with any databases supported by
-Knex.js, knex-row is currently only tested against MySQL. Some functions such
-as <code>insert</code> might behave differently with other databases.</p>
-</blockquote>
+<p>Tested clients:</p>
+<ul>
+<li><code>mysql2</code></li>
+<li><code>better-sqlite3</code></li>
+</ul>
+<p>Note that knex-row will work with other clients, but some functions such as
+<code>insert</code> might behave differently with other databases.</p>
 
 <a href="#installation" id="installation" style="color: inherit; text-decoration: none;">
   <h2>Installation</h2>
