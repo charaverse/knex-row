@@ -1,3 +1,5 @@
+# [1.0.0](https://github.com/charaverse/knex-row/compare/v0.7.0...v1.0.0) (2022-03-18)
+
 # [0.7.0](https://github.com/charaverse/knex-row/compare/v0.6.0...v0.7.0) (2022-03-14)
 
 ### Features
