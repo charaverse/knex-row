@@ -4,26 +4,37 @@ import { Row, findAll, find, insertAll, insert, countAll } from "..";
 
 const TABLE = "kansen";
 
-const mysql2Conn = knex<any, Record<string, any>[]>({
-  client: "mysql2",
-  connection: {
-    host: process.env.MYSQL_HOST,
-    port: Number(process.env.MYSQL_PORT),
-    user: process.env.MYSQL_USER,
-    password: process.env.MYSQL_PASS,
-    database: process.env.MYSQL_NAME,
-  },
-  asyncStackTraces: true,
-});
+const connections = [
+  knex({
+    client: "mysql2",
+    connection: {
+      host: process.env.MYSQL_HOST,
+      port: Number(process.env.MYSQL_PORT),
+      user: process.env.MYSQL_USER,
+      password: process.env.MYSQL_PASS,
+      database: process.env.MYSQL_NAME,
+    },
+    asyncStackTraces: true,
+  }),
+  knex({
+    client: "better-sqlite3",
+    connection: {
+      filename: ":memory:",
+    },
+    asyncStackTraces: true,
+    useNullAsDefault: false,
+  }),
+  knex<any, Record<string, any>[]>({
+    client: "sqlite3",
+    connection: {
+      filename: ":memory:",
+    },
+    asyncStackTraces: true,
+    useNullAsDefault: false,
+  }),
+];
 
-const betterSqliteConn = knex<any, Record<string, any>[]>({
-  client: "better-sqlite3",
-  connection: {
-    filename: ":memory:",
-  },
-  asyncStackTraces: true,
-  useNullAsDefault: false,
-});
+const [mysql2Conn, betterSqlite3Conn, sqlite3Conn] = connections;
 
 function createTestRow(): { row: Row; conn: Knex } {
   const conn = knex<any, Record<string, any>[]>({ client: "mysql2" });
@@ -62,27 +73,31 @@ beforeAll(async () => {
     table.integer("score");
   });
 
-  await betterSqliteConn.schema.createTable(TABLE, (table) => {
-    table.increments("id");
+  for await (const conn of [betterSqlite3Conn, sqlite3Conn]) {
+    await conn.schema.createTable(TABLE, (table) => {
+      table.increments("id");
 
-    table.timestamp("time_created");
-    table.timestamp("time_updated");
-    table.timestamp("time_deleted").nullable();
+      table.timestamp("time_created");
+      table.timestamp("time_updated");
+      table.timestamp("time_deleted").nullable();
 
-    table.string("key");
-    table.string("name");
-    table.integer("score");
-  });
+      table.string("key");
+      table.string("name");
+      table.integer("score");
+    });
+  }
 });
 
 afterAll(async () => {
-  await mysql2Conn.destroy();
-  await betterSqliteConn.destroy();
+  for await (const conn of connections) {
+    await conn.destroy();
+  }
 });
 
 describe.each([
   ["mysql", mysql2Conn],
-  ["better-sqlite", betterSqliteConn],
+  ["better-sqlite3", betterSqlite3Conn],
+  ["sqlite3", sqlite3Conn],
 ])("connection: %s", (_, conn) => {
   const kansenTable = [
     [1, "karlsruhe", "Karlsruhe", 10],
