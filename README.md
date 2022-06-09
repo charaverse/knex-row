@@ -10,6 +10,7 @@ Tested clients:
 
 - `mysql2`
 - `better-sqlite3`
+- `sqlite3`
 
 Note that knex-row will work with other clients, but some functions such as
 `insert` might behave differently with other databases.
