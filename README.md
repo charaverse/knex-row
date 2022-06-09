@@ -12,8 +12,8 @@ Tested clients:
 - `better-sqlite3`
 - `sqlite3`
 
-Note that knex-row will work with other clients, but some functions such as
-`insert` might behave differently with other databases.
+> While knex-row will work with other clients, but some functions such as
+> `insert` might behave differently with other databases.
 
 ## Installation
 
@@ -154,6 +154,9 @@ export async function findUserByName(name: string): Promise<UserModel> {
   return row ? new User(row) : null;
 }
 
+// routes/user.ts
+// ==============
+//
 // User service functions are the functions that is ready for use by outer
 // modules such as HTTP request handler or scripts.
 router.get("/user/:userName", (req, res, next) =>
