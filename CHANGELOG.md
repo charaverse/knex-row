@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/charaverse/knex-row/compare/v1.0.0...v1.1.0) (2022-06-09)
+
+### Features
+
+- add support for sqlite3 client
+  ([e71957b](https://github.com/charaverse/knex-row/commit/e71957b7eae1c5eb2d419e1d9e0c1f8a1a8c8ad8))
+
 # [1.0.0](https://github.com/charaverse/knex-row/compare/v0.7.0...v1.0.0) (2022-03-18)
 
 `better-sqlite3` client is supported.
